@@ -1,17 +1,9 @@
-import os
 import torch
 import torch.distributed as dist
-from torch.multiprocessing import Process
-from torchvision import datasets, transforms
-import torch.optim as optim
-import random
-import torch.nn.functional as F
-import numpy as np
-import argparse
 import copy
 
 import torch.nn as nn
-from data import *
+from data import get_batch, repackage_hidden
 import math
 
 def FAFED(train_data, corpus, model, args, device):
@@ -45,7 +37,7 @@ def FAFED(train_data, corpus, model, args, device):
         loss.backward()
 
         # `clip_grad_norm` helps prevent the exploding gradient problem in RNNs / LSTMs.
-        torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip) # type: ignore
 
         with torch.no_grad():
             for i, param in enumerate(model.parameters()):
@@ -84,8 +76,8 @@ def FAFED(train_data, corpus, model, args, device):
             loss.backward()
 
             # `clip_grad_norm` helps prevent the exploding gradient problem in RNNs / LSTMs.
-            torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip)
-            torch.nn.utils.clip_grad_norm_(model_.parameters(), args.clip)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip) # type: ignore
+            torch.nn.utils.clip_grad_norm_(model_.parameters(), args.clip) # type: ignore
 
             # Update
             for i, (para1, para2) in enumerate(zip(model.parameters(), model_.parameters())):

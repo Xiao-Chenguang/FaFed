@@ -1,13 +1,8 @@
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.autograd import Variable, Function
-from functools import reduce
-from operator import mul
 
 
 class MNISTModel(nn.Module):
-   
     def __init__(self):
         super(MNISTModel, self).__init__()
         self.conv1 = nn.Conv2d(1, 20, kernel_size=5)
@@ -22,7 +17,7 @@ class MNISTModel(nn.Module):
         for m in self.modules():
             if isinstance(m, (nn.Conv2d)):
                 nn.init.xavier_normal_(m.weight)
-                nn.init.constant_(m.bias, 1 / m.bias.numel())
+                nn.init.constant_(m.bias, 1 / m.bias.numel())  # type: ignore
             if isinstance(m, (nn.Linear)):
                 nn.init.xavier_normal_(m.weight)
                 nn.init.constant_(m.bias, 1 / m.bias.numel())
@@ -32,13 +27,12 @@ class MNISTModel(nn.Module):
         x = self.maxpool(self.relu(self.conv2(x)))
         x = x.view(-1, 800)
         x = self.relu(self.fc1(x))
-        x = self.fc2(x)  
+        x = self.fc2(x)
 
         return F.log_softmax(x, dim=1)
 
 
 class FashionMNISTModel(nn.Module):
-   
     def __init__(self):
         super(FashionMNISTModel, self).__init__()
         self.conv1 = nn.Conv2d(1, 5, kernel_size=3)
@@ -53,7 +47,7 @@ class FashionMNISTModel(nn.Module):
         for m in self.modules():
             if isinstance(m, (nn.Conv2d)):
                 nn.init.xavier_normal_(m.weight)
-                nn.init.constant_(m.bias, 1 / m.bias.numel())
+                nn.init.constant_(m.bias, 1 / m.bias.numel())  # type: ignore
             if isinstance(m, (nn.Linear)):
                 nn.init.xavier_normal_(m.weight)
                 nn.init.constant_(m.bias, 1 / m.bias.numel())
@@ -63,9 +57,10 @@ class FashionMNISTModel(nn.Module):
         x = self.maxpool(self.tanh(self.conv2(x)))
         x = x.view(-1, 250)
         x = self.tanh(self.fc1(x))
-        x = self.fc2(x)  
+        x = self.fc2(x)
 
         return F.log_softmax(x, dim=1)
+
 
 class CIFARModel(nn.Module):
     def __init__(self):
@@ -93,7 +88,3 @@ class CIFARModel(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return F.log_softmax(x, dim=1)
-
-
-
-

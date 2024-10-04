@@ -1,19 +1,8 @@
-import os
 import torch
 import torch.distributed as dist
-from torch.multiprocessing import Process
-from torchvision import datasets, transforms
-import torch.optim as optim
-import random
-import torch.nn.functional as F
 import torch.nn as nn
-import numpy as np
-import argparse
-import time
-import copy
 
-import torch.nn as nn
-from data import *
+from data import get_batch, repackage_hidden
 import math
 
 def FedAvg(train_data, corpus, model, args, device):
@@ -42,7 +31,7 @@ def FedAvg(train_data, corpus, model, args, device):
 			loss.backward()
 
 			# `clip_grad_norm` helps prevent the exploding gradient problem in RNNs / LSTMs.
-			torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip)
+			torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip) # type: ignore
 			for p in model.parameters():
 				p.data.add_(p.grad.data, alpha=-args.lr)
 
