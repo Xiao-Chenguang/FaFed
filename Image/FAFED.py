@@ -20,6 +20,7 @@ def FAFED(train_set, test_set, model, args, device):
     v_t = copy.deepcopy([i * 0 for i in list(model.state_dict().values())])
     H_t = copy.deepcopy([i * 0 for i in list(model.state_dict().values())])
 
+    # aggregate initial m_t, v_t, H_t from clients with one batch data
     for siter, (data, target) in enumerate(train_set):
         # Initialization
         optimizer.zero_grad()
