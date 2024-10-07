@@ -257,7 +257,7 @@ if __name__ == "__main__":
         type=float,
         default=0.032,
         metavar="LR",
-        help="learning rate (default: 0.1)",
+        help="global learning rate (default: 0.1)",
     )
     parser.add_argument(
         "--alpha", type=float, default=0.1, metavar="alpha", help="momentum rate alpha"
@@ -266,7 +266,7 @@ if __name__ == "__main__":
         "--beta", type=float, default=0.1, metavar="alpha", help="momentum rate beta"
     )
     parser.add_argument(
-        "--ext", type=float, default=0.95, metavar="alpha", help="momentum rate beta"
+        "--ext", type=float, default=0.95, metavar="alpha", help="momentum rate ext"
     )
     parser.add_argument(
         "--rho", type=float, default=0.1, metavar="alpha", help="momentum rate rho"
@@ -285,7 +285,7 @@ if __name__ == "__main__":
         "--dataset", type=str, default="mnist1", help="Dataset for trainig"
     )
     parser.add_argument(
-        "--method", type=str, default="fedavg", help="Dataset for trainig"
+        "--method", type=str, default="fedavg", help="Algorithm for trainig"
     )
     parser.add_argument(
         "--seed", type=int, default=0, metavar="S", help="random seed (default: 1234)"
@@ -294,8 +294,8 @@ if __name__ == "__main__":
         "--port",
         type=int,
         default=29505,
-        metavar="S",
-        help="random seed (default: 29505)",
+        metavar="P",
+        help="master port for torch dist (default: 29505)",
     )
     args = parser.parse_args()
     print(args)
