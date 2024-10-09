@@ -42,6 +42,27 @@ def gen_fl_dls(org_ds: Dataset, world_size: int) -> list[DataLoader]:
     ]
 
 
+def train_client(cid, model, data_loader, logger):
+    logger.debug(f"Starting task for client {cid}")
+
+    loss_fn = torch.nn.CrossEntropyLoss()
+    optimizer = SGD(model.parameters(), lr=0.01)
+    cost = 0.0
+    for epoch in range(3):
+        for x, y in data_loader:
+            logits = model(x)
+            loss = loss_fn(logits, y)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            cost += loss.item()
+    cost /= len(data_loader) * 3
+
+    # Simulate local training (replace with actual training)
+    logger.debug(f"loss: {cost}")
+    return cid, model, cost
+
+
 # Function that simulates a client process
 def client(worker_id, task_queue, result_queue):
     logging.basicConfig(
@@ -60,23 +81,8 @@ def client(worker_id, task_queue, result_queue):
 
         # Get the latest global model from the task queue
         cid, model, data_loader = task
-        logger.debug(f"Worker {worker_id} starting task for client {cid}")
 
-        loss_fn = torch.nn.CrossEntropyLoss()
-        optimizer = SGD(model.parameters(), lr=0.01)
-        cost = 0.0
-        for epoch in range(3):
-            for x, y in data_loader:
-                logits = model(x)
-                loss = loss_fn(logits, y)
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-                cost += loss.item()
-        cost /= len(data_loader) * 3
-
-        # Simulate local training (replace with actual training)
-        logger.debug(f"Worker {worker_id} loss: {cost}")
+        cid, model, cost = train_client(cid, model, data_loader, logger)
 
         # Send the local model update back to the server
         result_queue.put((cid, model, cost))
@@ -88,6 +94,7 @@ def server(
     data_loaders,
     test_loader,
     num_clients,
+    num_process,
     num_global_rounds,
     task_queue,
     result_queue,
@@ -99,14 +106,20 @@ def server(
         logger.info(f"Starting global round {global_round+1}/{num_global_rounds}")
 
         # Send the current global model to all clients via task queue
-        for cid in range(num_clients):
-            task_queue.put((cid, global_model, data_loaders[cid]))
+        if num_process > 0:
+            for cid in range(num_clients):
+                task_queue.put((cid, global_model, data_loaders[cid]))
 
         # Collect updates from all clients
         updates = []
         costs = []
-        for _ in range(num_clients):
-            client_id, local_update, cost = result_queue.get()
+        for cid in range(num_clients):
+            if num_process > 0:
+                client_id, local_update, cost = result_queue.get()
+            else:
+                client_id, local_update, cost = train_client(
+                    cid, global_model, data_loaders[cid], logger
+                )
             logger.info(f"Received Client {client_id} cost {cost:.4f}")
             updates.append(local_update)
             costs.append(cost)
@@ -175,6 +188,7 @@ if __name__ == "__main__":
         data_loaders,
         test_loader,
         num_clients,
+        num_process,
         num_global_rounds,
         task_queue,
         result_queue,
